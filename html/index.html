@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Restlib HUD</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+</head>
+<body>
+
+
+    <div id="vehicle-name-label" style="display: none;"></div>
+
+    <div class="cinematic-bar top"></div>
+    <div class="cinematic-bar bottom"></div>
+
+    <div class="edit-mode-overlay" id="edit-overlay" style="display: none;">
+        <div class="edit-instructions">
+            <i class="fa-solid fa-arrows-up-down-left-right"></i>
+            <span>ELEMENTLERİ TAŞIMAK İÇİN SÜRÜKLEYİN</span>
+        </div>
+        <div class="edit-controls">
+            <button class="save-btn" id="save-positions-btn"><i class="fa-solid fa-floppy-disk"></i> KAYDET & ÇIK</button>
+            <button class="reset-btn" id="reset-positions-btn"><i class="fa-solid fa-rotate-left"></i> SIFIRLA</button>
+        </div>
+        <div class="center-line-x"></div>
+        <div class="center-line-y"></div>
+    </div>
+
+    <div id="hud-menu" style="display: none;">
+        <div class="menu-header">
+            <i class="fa-solid fa-gear fa-spin-pulse" style="--fa-animation-duration: 3s;"></i>
+            <span>HUD AYARLARI</span>
+        </div>
+        <div class="menu-content">
+            <div class="menu-section">
+                <span class="section-title">GÖRÜNÜM TARZI</span>
+                <div class="setting-item">
+                    <span class="setting-label">HUD Stili</span>
+                    <select id="style-selector" class="style-dropdown">
+                        <option value="rect">Klasik (Kare)</option>
+                        <option value="round">Modern (Yuvarlak)</option>
+                        <option value="modern">Modern v3 (Birebir)</option> 
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <span class="setting-label">Bilgi Paneli Konumu</span>
+                    <select id="info-style-selector" class="style-dropdown">
+                        <option value="right">Sağ (Klasik)</option>
+                        <option value="top">Üst (Modern Bar)</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <span class="setting-label">Arka Plan Opaklığı</span>
+                     <input type="range" id="bg-opacity-slider" min="0" max="1" step="0.1" value="0.8" style="width: 100px; cursor: pointer;">
+                </div>
+                <div class="setting-item">
+                    <span class="setting-label">Araç İsmini Göster</span>
+                    <label class="switch">
+                        <input type="checkbox" id="toggle-veh-name" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="divider"></div>
+            <div class="menu-section">
+                <span class="section-title">GENEL AYARLAR</span>
+                <div class="setting-item"><span class="setting-label">Sinematik Mod</span><label class="switch"><input type="checkbox" id="cinematic-toggle"><span class="slider round"></span></label></div>
+                <div class="setting-item"><span class="setting-label">HUD'u Gizle</span><label class="switch"><input type="checkbox" id="hud-toggle"><span class="slider round"></span></label></div>
+            </div>
+            <div class="divider"></div>
+            
+            <div class="menu-section">
+                <span class="section-title">BİLGİ PANELİ ÖZELLEŞTİRME</span>
+                
+                <div class="setting-item">
+                    <span class="setting-label">Bilgi Panelini Göster</span>
+                    <label class="switch"><input type="checkbox" id="toggle-master-info" checked><span class="slider round"></span></label>
+                </div>
+
+                <div class="setting-grid">
+                    <div class="setting-item-compact"><span>Pusula / Yön</span><label class="switch small"><input type="checkbox" id="toggle-compass-info" checked><span class="slider round"></span></label></div>
+                    <div class="setting-item-compact"><span>Sunucu İsmi</span><label class="switch small"><input type="checkbox" id="toggle-server" checked><span class="slider round"></span></label></div>
+                    <div class="setting-item-compact"><span>Konum</span><label class="switch small"><input type="checkbox" id="toggle-location" checked><span class="slider round"></span></label></div>
+                    <div class="setting-item-compact"><span>Meslek</span><label class="switch small"><input type="checkbox" id="toggle-job" checked><span class="slider round"></span></label></div>
+                    <div class="setting-item-compact"><span>Karakter</span><label class="switch small"><input type="checkbox" id="toggle-char" checked><span class="slider round"></span></label></div>
+                    <div class="setting-item-compact"><span>Paralar</span><label class="switch small"><input type="checkbox" id="toggle-money" checked><span class="slider round"></span></label></div>
+                    <div class="setting-item-compact"><span>Zaman</span><label class="switch small"><input type="checkbox" id="toggle-time" checked><span class="slider round"></span></label></div>
+                </div>
+            </div>
+            </div>
+        <div class="menu-footer">
+            <div class="button-row">
+                <button id="edit-hud-btn" class="action-btn btn-edit"><i class="fa-solid fa-pen-to-square"></i> DÜZENLE</button>
+                <button id="refresh-btn" class="action-btn btn-refresh"><i class="fa-solid fa-rotate"></i> YENİLE</button>
+            </div>
+            <button id="close-menu-btn" class="action-btn btn-close">AYARLARI KAYDET VE KAPAT</button>
+        </div>
+    </div>
+
+    <div id="minimap-border"></div>
+
+    <div id="drag-compass">
+        <div class="compass-container">
+            <div class="compass-arrow-top">▼</div>
+            <div class="compass-wrapper"><div id="compass-strip"></div></div>
+            <div class="compass-degree-val" id="compass-degree">0</div>
+        </div>
+    </div>
+
+    <div class="draggable-element" id="drag-info">
+        <div class="info-hud">
+            <div class="info-box server-title" id="area-server">Restlib Studio</div>
+            <div class="info-group">
+                <div class="info-box" id="area-location"><i class="fa-solid fa-location-dot"></i> <span id="street">Yükleniyor...</span></div>
+            <div class="info-box" id="area-char">
+                <i class="fa-solid fa-user"></i> 
+                <span style="display: inline-flex; gap: 4px; flex-direction: row;">
+                    <span id="player-name">Yükleniyor...</span> [<span id="player-id">0</span>]
+                </span>
+            </div>
+            </div>
+            <div class="info-box job-box" id="area-job"><i class="fa-solid fa-briefcase"></i> <span id="job-label">Meslek Yok</span></div>
+            <div class="info-group">
+                <div class="info-box money-cash" id="area-cash"><i class="fa-solid fa-wallet"></i> <span id="cash">0</span> $</div>
+                <div class="info-box money-bank" id="area-bank"><i class="fa-solid fa-building-columns"></i> <span id="bank">0</span> $</div>
+            </div>
+            <div class="info-group">
+                <div class="info-box time-box" id="area-time"><i class="fa-solid fa-calendar"></i> <span id="date">00.00</span><span class="sep">|</span><i class="fa-solid fa-clock"></i> <span id="time">00:00</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="top-info-bar" style="display: none;">
+        
+        <div class="top-item compass-data" id="top-area-compass">
+            <div class="top-icon-circle"><i class="fa-regular fa-compass"></i></div>
+            <span id="top-heading">N</span>
+        </div>
+        
+        <div class="top-sep"></div>
+
+        <div class="top-item location-data" id="top-area-location">
+            <div class="top-icon-circle"><i class="fa-solid fa-location-dot"></i></div>
+            <div class="top-text-col">
+                <span id="top-street" class="main-street">Unknown</span>
+                <span id="top-zone" class="sub-zone">Los Santos</span>
+            </div>
+        </div>
+
+        <div class="top-sep"></div>
+
+        <div class="top-item player-data" id="top-area-player">
+            <i class="fa-solid fa-user"></i>
+            <span id="top-player-name">Player</span>
+            <span class="top-id-badge" id="top-player-id">0</span>
+        </div>
+
+        <div class="top-sep"></div>
+
+        <div class="top-item money-data" id="top-area-money">
+            <div class="money-row">
+                <i class="fa-solid fa-wallet cash-icon"></i> <span id="top-cash" class="money-val cash">$0</span>
+            </div>
+            <div class="money-row">
+                <i class="fa-solid fa-building-columns bank-icon"></i> <span id="top-bank" class="money-val bank">$0</span>
+            </div>
+        </div>
+
+        <div class="top-sep"></div>
+
+        <div class="top-item time-data" id="top-area-time">
+            <i class="fa-regular fa-clock"></i>
+            <span id="top-time">00:00</span>
+        </div>
+    </div>
+
+    <div class="draggable-element style-rect-container" id="drag-status">
+        <div class="status-hud">
+            <div class="status-row">
+                <div class="status-box" id="thirst-box">
+                    <i class="fa-solid fa-droplet"></i><span class="stat-val" id="thirst-val">100</span>
+                </div>
+                <div class="status-box" id="hunger-box">
+                    <i class="fa-solid fa-burger"></i><span class="stat-val" id="hunger-val">100</span>
+                </div>
+                <div class="status-box" id="stamina-box">
+                    <i class="fa-solid fa-lungs"></i><span class="stat-val" id="stamina-val">100</span>
+                </div>
+                <div class="status-box" id="mic-box">
+                    <i class="fa-solid fa-microphone-lines"></i>
+                    <div class="voice-range-bar"><div id="voice-range-fill"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="draggable-element style-rect-container" id="drag-health">
+        <div class="health-row status-box-bar solid-style"> 
+            <i class="fa-solid fa-heart heart-icon"></i>
+            <div class="bar-bg-solid">
+                <div id="health-fill-solid" class="bar-fill-solid health-color"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="draggable-element style-rect-container" id="drag-armor" style="display: none;">
+        <div class="armor-row status-box-bar solid-style" id="armor-wrapper"> 
+            <i class="fa-solid fa-shield-halved armor-icon"></i>
+            <div class="bar-bg-solid">
+                <div id="armor-fill-solid" class="bar-fill-solid armor-color"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="draggable-element style-circle-container" id="drag-status-bar-rounded" style="display: none;">
+        <div class="rounded-status-bar-container">
+            <div class="status-box-rounded">
+                <svg class="progress-svg-rounded" width="44" height="44" viewBox="0 0 44 44"><circle class="progress-bg-rounded" cx="22" cy="22" r="18"></circle><circle class="progress-bar-rounded health" id="health-circle-stroke-r" cx="22" cy="22" r="18" pathLength="100" transform="rotate(-90 22 22)"></circle></svg>
+                <i class="fa-solid fa-heart icon-rounded"></i>
+                <span id="health-percent" class="hud-percent-text">100%</span>
+            </div>
+            <div class="status-box-rounded" id="armor-rounded-box" style="display: none;">
+                <svg class="progress-svg-rounded" width="44" height="44" viewBox="0 0 44 44"><circle class="progress-bg-rounded" cx="22" cy="22" r="18"></circle><circle class="progress-bar-rounded armor" id="armor-circle-stroke-r" cx="22" cy="22" r="18" pathLength="100" transform="rotate(-90 22 22)"></circle></svg>
+                <i class="fa-solid fa-shield-halved icon-rounded"></i>
+                <span id="armor-percent" class="hud-percent-text">0%</span>
+            </div>
+            <div class="status-box-rounded">
+                <svg class="progress-svg-rounded" width="44" height="44" viewBox="0 0 44 44"><circle class="progress-bg-rounded" cx="22" cy="22" r="18"></circle><circle class="progress-bar-rounded hunger" id="hunger-circle-stroke-r" cx="22" cy="22" r="18" pathLength="100" transform="rotate(-90 22 22)"></circle></svg>
+                <i class="fa-solid fa-burger icon-rounded"></i>
+                <span id="hunger-percent" class="hud-percent-text">100%</span>
+            </div>
+            <div class="status-box-rounded">
+                <svg class="progress-svg-rounded" width="44" height="44" viewBox="0 0 44 44"><circle class="progress-bg-rounded" cx="22" cy="22" r="18"></circle><circle class="progress-bar-rounded water" id="thirst-circle-stroke-r" cx="22" cy="22" r="18" pathLength="100" transform="rotate(-90 22 22)"></circle></svg>
+                <i class="fa-solid fa-droplet icon-rounded"></i>
+                <span id="thirst-percent" class="hud-percent-text">100%</span>
+            </div>
+            <div class="status-box-rounded">
+                <svg class="progress-svg-rounded" width="44" height="44" viewBox="0 0 44 44"><circle class="progress-bg-rounded" cx="22" cy="22" r="18"></circle><circle class="progress-bar-rounded energy" id="stamina-circle-stroke-r" cx="22" cy="22" r="18" pathLength="100" transform="rotate(-90 22 22)"></circle></svg>
+                <i class="fa-solid fa-lungs icon-rounded"></i>
+                <span id="stamina-percent" class="hud-percent-text">100%</span>
+            </div>
+            <div class="status-box-rounded">
+                <svg class="progress-svg-rounded" width="44" height="44" viewBox="0 0 44 44"><circle class="progress-bg-rounded" cx="22" cy="22" r="18"></circle><circle class="progress-bar-rounded voice" id="mic-circle-stroke-r" cx="22" cy="22" r="18" pathLength="100" transform="rotate(-90 22 22)"></circle></svg>
+                <i class="fa-solid fa-microphone-lines icon-rounded" id="mic-icon-r"></i>
+                <span id="voice-percent" class="hud-percent-text">66%</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="drag-status-modern" class="draggable-element style-modern-container">
+        <div class="modern-header-row">
+            <i class="fa-solid fa-microphone" id="modern-mic-icon"></i>
+            <span id="modern-mic-val">NORMAL</span>
+            <div class="modern-range-container">
+                <div class="modern-mic-dash" id="range-dash-1"></div>
+                <div class="modern-mic-dash" id="range-dash-2"></div>
+                <div class="modern-mic-dash" id="range-dash-3"></div>
+            </div>
+        </div>
+
+        <div class="modern-health-wrapper">
+            <div class="modern-health-icon-box">
+                <i class="fa-solid fa-heart"></i>
+            </div>
+            <div class="modern-health-bar-container">
+                <div id="modern-health-fill" class="modern-health-fill"></div>
+                <span id="modern-health-text" class="bar-text-overlay">100%</span>
+            </div>
+        </div>
+        
+        <div class="modern-status-grid">
+            <div class="modern-status-item" id="modern-armor-box">
+                <div class="modern-item-icon armor-bg"><i class="fa-solid fa-shield-halved"></i></div>
+                <span id="modern-armor-val">0%</span>
+            </div>
+            <div class="modern-status-item">
+                <div class="modern-item-icon"><i class="fa-solid fa-utensils"></i></div>
+                <span id="modern-hunger-val">100%</span>
+            </div>
+            <div class="modern-status-item">
+                <div class="modern-item-icon"><i class="fa-solid fa-droplet"></i></div>
+                <span id="modern-thirst-val">100%</span>
+            </div>
+            <div class="modern-status-item">
+                <div class="modern-item-icon"><i class="fa-solid fa-person-running"></i></div>
+                <span id="modern-stamina-val">100%</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="draggable-element" id="drag-vehicle">
+        <div class="vehicle-gauge-container" id="vehicle-hud" style="display: none;">
+            
+            <div class="fuel-wrapper">
+                <i class="fa-solid fa-gas-pump fuel-icon"></i>
+                <div class="fuel-bar-bg">
+                    <div id="fuel-fill-vertical" class="fuel-fill-vertical"></div>
+                </div>
+            </div>
+
+            <div class="veh-health-wrapper">
+            <i class="fa-solid fa-car-burst health-icon"></i>
+            <span id="vehicle-health-percent">100%</span>
+        </div>
+
+            <div class="center-wrapper">
+                <div class="speed-text-new" id="speed">0</div>
+                <div class="rpm-wrapper" id="rpm-bar-container">
+                    </div>
+            </div>
+
+            <div class="right-wrapper">
+                <div class="gear-box-new" id="gear">N</div>
+                <div class="icon-stack">
+                    <i class="fa-solid fa-gauge-high" id="cruise-icon"></i>
+                    <i class="fa-solid fa-lightbulb" id="light-icon"></i>
+                    <i class="fa-solid fa-user-slash" id="belt-icon"></i>
+                    </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="info-box weapon-box" id="ammo-hud" style="display: none;">
+        <div class="ammo-content">
+            <i class="fa-solid fa-gun"></i>
+            <span class="ammo-text">
+                <span id="ammo-clip">0</span> 
+                <span class="sep">/</span> 
+                <span id="ammo-reserve" style="opacity: 0.7;">0</span>
+            </span>
+        </div>
+        <div class="ammo-bar-bg"><div id="ammo-bar-fill"></div></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
